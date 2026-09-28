@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligent Port Logistics Optimization Platform</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#1f2937}
+button,input,select{font:inherit}.app{display:flex;min-height:100vh}.sidebar{width:250px;background:#102a43;color:white;padding:20px;position:fixed;top:0;bottom:0;left:0;overflow:auto}
+.brand{font-size:20px;font-weight:700;margin-bottom:25px;line-height:1.35}.brand small{font-size:11px;opacity:.75}
+.nav button{display:block;width:100%;padding:12px 10px;margin:5px 0;border:0;border-radius:8px;background:transparent;color:white;text-align:left;cursor:pointer}
+.nav button:hover,.nav button.active{background:#1f4e79}.main{margin-left:250px;width:calc(100% - 250px);padding:25px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.top h1{margin:0;font-size:26px}.user{background:white;padding:9px 14px;border-radius:8px;box-shadow:0 1px 5px #0001}
+.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:20px}.card{background:white;border-radius:12px;padding:20px;box-shadow:0 2px 10px #00000010}.card h3{margin:0 0 8px;font-size:13px;color:#667085}.value{font-size:28px;font-weight:700}.panel{background:white;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px #00000010}.panel h2{margin-top:0;font-size:19px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}th{background:#f8fafc}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.field label{display:block;font-size:12px;font-weight:600;margin-bottom:5px}.field input,.field select{width:100%;padding:10px;border:1px solid #d0d5dd;border-radius:7px}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.btn{border:0;border-radius:7px;padding:10px 14px;cursor:pointer;background:#1f4e79;color:white}.btn.secondary{background:#667085}.btn.danger{background:#b42318}.btn.success{background:#027a48}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#e8f1f8;font-size:12px}.empty{padding:25px;text-align:center;color:#667085}
+.notice{padding:12px;background:#eef6ff;border-left:4px solid #1f4e79;margin-bottom:15px}.result{font-size:18px;font-weight:700;margin-top:12px}
+@media(max-width:900px){.sidebar{width:200px}.main{margin-left:200px;width:calc(100% - 200px)}.cards{grid-template-columns:repeat(2,1fr)}.formgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.sidebar{position:static;width:100%;min-height:auto}.app{display:block}.main{margin:0;width:100%;padding:15px}.cards,.grid2,.formgrid{grid-template-columns:1fr}.top{gap:10px;align-items:flex-start;flex-direction:column}}
+
+.login-screen{position:fixed;inset:0;background:#102a43;display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{width:min(420px,92%);background:white;padding:32px;border-radius:14px;box-shadow:0 15px 50px #0005}
+.login-box h1{margin:0 0 8px;font-size:24px}.login-box p{color:#667085;margin-bottom:22px}
+.login-box label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}.login-box input{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:8px}
+.login-box button{width:100%;margin-top:18px;padding:12px;border:0;border-radius:8px;background:#1f4e79;color:white;font-weight:700;cursor:pointer}
+.login-error{color:#b42318;font-size:13px;margin-top:10px;display:none}
+.logout{margin-top:20px;background:#b42318!important}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <h1>Port Optimizer Login</h1>
+    <p>Administrator access to the Freetown Port Logistics Platform</p>
+    <form onsubmit="login(event)">
+      <label>Username</label>
+      <input id="loginUser" autocomplete="username" required>
+      <label>Passcode</label>
+      <input id="loginPass" type="password" autocomplete="current-password" required>
+      <button type="submit">Login to Dashboard</button>
+      <div id="loginError" class="login-error">Invalid username or passcode.</div>
+    </form>
+  </div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+<div class="brand">PORT OPTIMIZER<br><small>Freetown Port Decision Support</small></div>
+<div class="nav">
+<button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+<button onclick="showPage('vessels',this)">🚢 Vessels</button>
+<button onclick="showPage('containers',this)">📦 Containers</button>
+<button onclick="showPage('cargo',this)">🧾 Cargo</button>
+<button onclick="showPage('yard',this)">🏗️ Yard</button>
+<button onclick="showPage('trucks',this)">🚚 Trucks / Gate</button>
+<button onclick="showPage('schedule',this)">📅 Scheduling</button>
+<button onclick="showPage('prediction',this)">🤖 Prediction</button>
+<button onclick="showPage('reports',this)">📈 Reports</button>
+<button onclick="showPage('users',this)">👤 Users</button><button class="logout" onclick="logout()">🔒 Logout</button>
+</div>
+</aside>
+<main class="main">
+<div class="top"><h1 id="title">Dashboard</h1><div class="user">Administrator</div></div>
+
+<section id="dashboard" class="page active">
+<div class="notice"><b>Decision-support prototype:</b> recommendations support human operators and do not directly control vessels, cranes, trucks, or other equipment.</div>
+<div class="cards">
+<div class="card"><h3>VESSELS</h3><div class="value" id="kVessels">0</div></div>
+<div class="card"><h3>CONTAINERS</h3><div class="value" id="kContainers">0</div></div>
+<div class="card"><h3>YARD OCCUPANCY</h3><div class="value" id="kYard">0%</div></div>
+<div class="card"><h3>PENDING SCHEDULES</h3><div class="value" id="kSchedules">0</div></div>
+</div>
+<div class="grid2">
+<div class="panel"><h2>Recent Vessels</h2><div id="recentVessels"></div></div>
+<div class="panel"><h2>System Recommendations</h2><div id="recommendations"></div></div>
+</div>
+</section>
+
+<section id="vessels" class="page">
+<div class="panel"><h2>Add Vessel</h2><form onsubmit="addVessel(event)"><div class="formgrid">
+<div class="field"><label>Vessel Name</label><input id="vName" required></div>
+<div class="field"><label>Voyage</label><input id="vVoyage" required></div>
+<div class="field"><label>ETA</label><input id="vEta" type="datetime-local" required></div>
+</div><div class="actions"><button class="btn">Add Vessel</button></div></form></div>
+<div class="panel"><h2>Vessel Records</h2><div id="vesselTable"></div></div>
+</section>
+
+<section id="containers" class="page">
+<div class="panel"><h2>Add Container</h2><form onsubmit="addContainer(event)"><div class="formgrid">
+<div class="field"><label>Container ID</label><input id="cId" placeholder="e.g. SLEU1234567" required></div>
+<div class="field"><label>Vessel</label><select id="cVessel"></select></div>
+<div class="field"><label>Type</label><select id="cType"><option>20ft</option><option>40ft</option><option>40ft High Cube</option></select></div>
+<div class="field"><label>Weight (tonnes)</label><input id="cWeight" type="number" min="0" required></div>
+<div class="field"><label>Status</label><select id="cStatus"><option>Arrived</option><option>In Yard</option><option>Released</option><option>Loaded</option></select></div>
+</div><div class="actions"><button class="btn">Add Container</button></div></form></div>
+<div class="panel"><h2>Container Records</h2><div id="containerTable"></div></div>
+</section>
+
+<section id="cargo" class="page">
+<div class="panel"><h2>Cargo Priority Analysis</h2><div class="formgrid">
+<div class="field"><label>Cargo Category</label><select id="cargoCat"><option>Perishable</option><option>Medical</option><option>General</option><option>Hazardous</option><option>Valuable</option></select></div>
+<div class="field"><label>Days in Port</label><input id="cargoDays" type="number" min="0" value="2"></div>
+<div class="field"><label>Urgency (1-10)</label><input id="cargoUrgency" type="number" min="1" max="10" value="5"></div>
+</div><div class="actions"><button class="btn" onclick="calculatePriority()">Calculate Priority</button></div><div id="priorityResult" class="result"></div></div>
+</section>
+
+<section id="yard" class="page">
+<div class="panel"><h2>Yard Allocation Recommendation</h2><div class="notice">The prototype recommends a yard zone based on cargo priority, container type and available capacity.</div>
+<div class="formgrid">
+<div class="field"><label>Container ID</label><input id="yContainer" placeholder="Container ID"></div>
+<div class="field"><label>Priority</label><select id="yPriority"><option>High</option><option>Medium</option><option>Low</option></select></div>
+<div class="field"><label>Container Type</label><select id="yType"><option>20ft</option><option>40ft</option><option>40ft High Cube</option></select></div>
+</div><div class="actions"><button class="btn" onclick="allocateYard()">Recommend Zone</button></div><div id="yardResult" class="result"></div></div>
+<div class="panel"><h2>Yard Zones</h2><div id="yardTable"></div></div>
+</section>
+
+<section id="trucks" class="page">
+<div class="panel"><h2>Truck / Gate Scheduling</h2><form onsubmit="addTruck(event)"><div class="formgrid">
+<div class="field"><label>Truck ID</label><input id="tId" required></div>
+<div class="field"><label>Container ID</label><input id="tContainer" required></div>
+<div class="field"><label>Appointment</label><input id="tTime" type="datetime-local" required></div>
+</div><div class="actions"><button class="btn">Add Appointment</button></div></form></div>
+<div class="panel"><h2>Gate Appointments</h2><div id="truckTable"></div></div>
+</section>
+
+<section id="schedule" class="page">
+<div class="panel"><h2>Intelligent Scheduling</h2><div class="notice">Scheduling uses ETA and priority to produce a simple recommended service order for prototype evaluation.</div>
+<div class="actions"><button class="btn success" onclick="generateSchedule()">Generate Recommended Schedule</button></div><div id="scheduleResult"></div></div>
+</section>
+
+<section id="prediction" class="page">
+<div class="panel"><h2>Container Flow Prediction</h2><p>Enter recent daily gate-out counts. The prototype calculates a moving-average forecast.</p>
+<div class="formgrid"><div class="field"><label>Day 1</label><input class="flow" type="number" value="80"></div><div class="field"><label>Day 2</label><input class="flow" type="number" value="95"></div><div class="field"><label>Day 3</label><input class="flow" type="number" value="100"></div><div class="field"><label>Day 4</label><input class="flow" type="number" value="110"></div><div class="field"><label>Day 5</label><input class="flow" type="number" value="120"></div></div>
+<div class="actions"><button class="btn" onclick="predictFlow()">Forecast Next Day</button></div><div id="predictionResult" class="result"></div></div>
+</section>
+
+<section id="reports" class="page">
+<div class="panel"><h2>Operational Report</h2><div id="report"></div><div class="actions"><button class="btn" onclick="window.print()">Print Report</button></div></div>
+</section>
+
+<section id="users" class="page">
+<div class="panel"><h2>User Management</h2><div id="userTable"></div></div>
+</section>
+</main></div>
+
+<script>
+
+function login(e){
+ e.preventDefault();
+ const u=document.getElementById('loginUser').value.trim();
+ const pw=document.getElementById('loginPass').value;
+ if(u==='admin' && pw==='PORT2026'){
+   sessionStorage.setItem('portLoggedIn','1');
+   document.getElementById('loginScreen').style.display='none';
+   document.getElementById('loginError').style.display='none';
+ }else{
+   document.getElementById('loginError').style.display='block';
+ }
+}
+function logout(){
+ sessionStorage.removeItem('portLoggedIn');
+ document.getElementById('loginScreen').style.display='flex';
+ document.getElementById('loginPass').value='';
+}
+
+const key='freetownPortOptimizer_v1';
+let db=JSON.parse(localStorage.getItem(key)||'null')||{
+vessels:[{name:'MV Sierra Leone',voyage:'SL-2026-01',eta:'2026-09-11T08:00'}],
+containers:[
+{id:'SLEU1000001',vessel:'MV Sierra Leone',type:'40ft',weight:18,status:'In Yard'},
+{id:'SLEU1000002',vessel:'MV Sierra Leone',type:'20ft',weight:12,status:'Arrived'}
+],
+trucks:[],schedules:[],users:[{name:'Administrator',role:'Admin',status:'Active'}]
+};
+const zones=[
+{name:'A1',capacity:100,used:58},{name:'A2',capacity:100,used:72},
+{name:'B1',capacity:120,used:84},{name:'B2',capacity:120,used:45}
+];
+function save(){localStorage.setItem(key,JSON.stringify(db));renderAll()}
+function esc(x){return String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.getElementById('title').textContent=btn.textContent.replace(/^[^A-Za-z]+/,'').trim()}
+function addVessel(e){e.preventDefault();db.vessels.push({name:vName.value.trim(),voyage:vVoyage.value.trim(),eta:vEta.value});e.target.reset();save()}
+function addContainer(e){e.preventDefault();db.containers.push({id:cId.value.trim(),vessel:cVessel.value,type:cType.value,weight:Number(cWeight.value),status:cStatus.value});e.target.reset();save()}
+function addTruck(e){e.preventDefault();db.trucks.push({id:tId.value.trim(),container:tContainer.value.trim(),time:tTime.value,status:'Pending'});e.target.reset();save()}
+function del(type,i){db[type].splice(i,1);save()}
+function addBtn(type,i){return `<button class="btn danger" onclick="del('${type}',${i})">Delete</button>`}
+function renderAll(){renderDashboard();renderVessels();renderContainers();renderTrucks();renderYard();renderUsers();renderReport();cVessel.innerHTML=db.vessels.map(v=>`<option>${esc(v.name)}</option>`).join('')}
+function renderDashboard(){
+kVessels.textContent=db.vessels.length;kContainers.textContent=db.containers.length;kYard.textContent=Math.round(zones.reduce((a,z)=>a+z.used,0)/zones.reduce((a,z)=>a+z.capacity,0)*100)+'%';kSchedules.textContent=db.schedules.filter(s=>s.status!=='Completed').length;
+recentVessels.innerHTML=db.vessels.length?`<table><tr><th>Name</th><th>Voyage</th><th>ETA</th></tr>${db.vessels.slice(-5).reverse().map(v=>`<tr><td>${esc(v.name)}</td><td>${esc(v.voyage)}</td><td>${esc(v.eta.replace('T',' '))}</td></tr>`).join('')}</table>`:'<div class="empty">No vessels.</div>';
+recommendations.innerHTML=`<p>• Review ${db.containers.filter(c=>c.status==='Arrived').length} newly arrived container(s).</p><p>• Current estimated yard occupancy: <b>${kYard.textContent}</b>.</p><p>• Prioritize high-urgency or time-sensitive cargo.</p><p>• Use scheduled truck appointments to reduce gate congestion.</p>`;
+}
+function renderVessels(){vesselTable.innerHTML=db.vessels.length?`<table><tr><th>#</th><th>Vessel</th><th>Voyage</th><th>ETA</th><th>Action</th></tr>${db.vessels.map((v,i)=>`<tr><td>${i+1}</td><td>${esc(v.name)}</td><td>${esc(v.voyage)}</td><td>${esc(v.eta.replace('T',' '))}</td><td>${addBtn('vessels',i)}</td></tr>`).join('')}</table>`:'<div class="empty">No vessel records.</div>'}
+function renderContainers(){containerTable.innerHTML=db.containers.length?`<table><tr><th>ID</th><th>Vessel</th><th>Type</th><th>Weight</th><th>Status</th><th>Action</th></tr>${db.containers.map((c,i)=>`<tr><td>${esc(c.id)}</td><td>${esc(c.vessel)}</td><td>${esc(c.type)}</td><td>${esc(c.weight)} t</td><td><span class="badge">${esc(c.status)}</span></td><td>${addBtn('containers',i)}</td></tr>`).join('')}</table>`:'<div class="empty">No container records.</div>'}
+function renderTrucks(){truckTable.innerHTML=db.trucks.length?`<table><tr><th>Truck</th><th>Container</th><th>Appointment</th><th>Status</th><th>Action</th></tr>${db.trucks.map((t,i)=>`<tr><td>${esc(t.id)}</td><td>${esc(t.container)}</td><td>${esc(t.time.replace('T',' '))}</td><td>${esc(t.status)}</td><td>${addBtn('trucks',i)}</td></tr>`).join('')}</table>`:'<div class="empty">No appointments.</div>'}
+function renderYard(){yardTable.innerHTML=`<table><tr><th>Zone</th><th>Capacity</th><th>Used</th><th>Available</th><th>Occupancy</th></tr>${zones.map(z=>`<tr><td>${z.name}</td><td>${z.capacity}</td><td>${z.used}</td><td>${z.capacity-z.used}</td><td>${Math.round(z.used/z.capacity*100)}%</td></tr>`).join('')}</table>`}
+function renderUsers(){userTable.innerHTML=`<table><tr><th>Name</th><th>Role</th><th>Status</th></tr>${db.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.role)}</td><td>${esc(u.status)}</td></tr>`).join('')}</table>`}
+function calculatePriority(){let cat=cargoCat.value,days=Number(cargoDays.value),urg=Number(cargoUrgency.value);let score=urg*6+Math.min(days,10)*2+(cat==='Perishable'||cat==='Medical'?20:cat==='Hazardous'?15:0);let p=score>=80?'HIGH':score>=55?'MEDIUM':'LOW';priorityResult.textContent=`Priority: ${p} (score ${score})`}
+function allocateYard(){let eligible=zones.filter(z=>z.capacity-z.used>5).sort((a,b)=>(a.used/a.capacity)-(b.used/b.capacity));let z=eligible[0];yardResult.textContent=z?`Recommended zone for ${yContainer.value||'container'}: ${z.name} — ${z.capacity-z.used} available slots.`:'No suitable zone available.'}
+function generateSchedule(){let sorted=[...db.containers].sort((a,b)=>{let pa=a.status==='Arrived'?0:a.status==='In Yard'?1:2;let pb=b.status==='Arrived'?0:b.status==='In Yard'?1:2;return pa-pb||a.weight-b.weight});db.schedules=sorted.map((c,i)=>({container:c.id,position:i+1,status:'Pending'}));save();scheduleResult.innerHTML=`<table><tr><th>Position</th><th>Container</th><th>Status</th></tr>${db.schedules.map(s=>`<tr><td>${s.position}</td><td>${esc(s.container)}</td><td>${s.status}</td></tr>`).join('')}</table>`}
+function predictFlow(){let a=[...document.querySelectorAll('.flow')].map(x=>Number(x.value)||0);let avg=a.reduce((x,y)=>x+y,0)/a.length;predictionResult.textContent=`Forecast for next day: approximately ${Math.round(avg)} container movements (5-day moving average).`}
+function renderReport(){report.innerHTML=`<p><b>Report date:</b> ${new Date().toLocaleString()}</p><table><tr><th>Indicator</th><th>Value</th></tr><tr><td>Total vessels</td><td>${db.vessels.length}</td></tr><tr><td>Total containers</td><td>${db.containers.length}</td></tr><tr><td>Containers in yard</td><td>${db.containers.filter(c=>c.status==='In Yard').length}</td></tr><tr><td>Gate appointments</td><td>${db.trucks.length}</td></tr><tr><td>Generated schedules</td><td>${db.schedules.length}</td></tr></table>`}
+if(sessionStorage.getItem('portLoggedIn')==='1') document.getElementById('loginScreen').style.display='none';
+renderAll();
+</script>
+</body>
+</html>
